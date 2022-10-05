@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Room
+from .models import Room, Topic
 from .forms import RoomForm
 
 #rooms = [
@@ -10,8 +10,15 @@ from .forms import RoomForm
 
 
 def home(request):
-    rooms = Room.objects.all()
-    context = {'rooms': rooms}
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+
+    ## topic__name=q não retorna nada na home, pois topic__name só inclui
+    ## o que tem exatamente o topic name. topic__name__contains retorna
+    ## tudo na página principal, pois inclui tudo que CONTENHA "q", e nada
+    ## está contido em todos os objetos. ;)
+    rooms = Room.objects.filter(topic__name__icontains=q)
+    topics = Topic.objects.all()
+    context = {'rooms': rooms, 'topics':topics}
     return render(request, 'base/home.html', context)
 
 def room(request, pk):
